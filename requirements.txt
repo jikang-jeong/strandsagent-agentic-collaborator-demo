@@ -1,0 +1,6 @@
+strands-agents==0.1.7
+strands-agents-tools
+httpx
+wikipedia
+pydantic
+python-dotenv
