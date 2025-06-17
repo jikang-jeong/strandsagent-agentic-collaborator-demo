@@ -2,6 +2,7 @@ strands-agents==0.1.7
 strands-agents-tools
 httpx
 mem0ai
+faiss-cpu
 opensearch-py
 wikipedia
 pydantic
