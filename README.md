@@ -1,230 +1,266 @@
-# Multi-Agent System with Strands Agents
+# Agents as Tools 다중 에이전트 시스템
 
-이 프로젝트는 **Strands Agents SDK**를 사용하여 구현된 다중 에이전트 시스템입니다.
+Strands Agents SDK를 사용한 "Agents as Tools" 패턴 구현 예제입니다.
 
-## [*] 시스템 구조
+## 시스템 구조
 
-### 에이전트들
-1. **Weather Forecaster Agent**: 위도/경도를 받아 날씨 정보를 반환
-2. **Search Agent**: 지역명을 받아 Wikipedia 정보와 좌표를 반환
-3. **Extra Agent**: 간단한 "hello" 메시지를 반환
-4. **Super Agent**: 모든 에이전트를 조정하고 결과를 통합
+### 전문 에이전트들 (Tools)
 
-### MCP 도구들 (Strands Tools)
-1. **get_position**: 지역명을 위도/경도로 변환하는 도구
-2. **wikipedia_search**: Wikipedia API를 사용한 지역 정보 검색 도구
+1. **Search Agent** - Wikipedia 검색 전문
+   - Wikipedia API를 사용한 정보 검색
+   - 검색 결과 분석 및 요약
 
-### [*] LLM Foundation Model 지원
-- **Amazon Bedrock** (기본값): Nova Pro, Claude 3.5 Sonnet 등
+2. **Weather Agent** - 날씨 정보 전문  
+   - 지역 좌표 검색
+   - National Weather Service API 사용 (미국 지역만)
+   - 날씨 예보 제공
 
-## [*] 설치 및 실행
+3. **Conversation Agent** - 일반 대화 전문
+   - 인사말, 일상 대화
+   - 검색이 필요하지 않은 일반적인 질문 응답
+
+4. **Memory Agent** - 메모리 관리 전문
+   - 대화 기록 저장/검색/삭제
+   - 컨텍스트 유지
+
+### 오케스트레이터
+
+5. **Super Agent** - 전체 조정
+   - 사용자 요청 분석
+   - 요청 명확성 판단 (NEW!)
+   - 적절한 전문 에이전트 선택 및 호출
+   - 결과 종합 및 최종 응답 생성
+
+## 주요 특징
+
+- **Agents as Tools 패턴**: 각 전문 에이전트가 `@tool` 데코레이터로 도구화
+- **계층적 위임**: Super Agent가 전문 에이전트들을 조정
+- **🆕 Interactive 대화 흐름**: 모호한 요청 시 추가 정보 요청
+- **2단계 처리**: 1) 명확성 판단 → 2) 계획 수립 → 3) 계획 실행
+- **실행 계획 가시성**: Super Agent가 어떤 계획으로 에이전트들을 실행할지 명시적으로 표시
+- **모듈화**: 각 에이전트는 독립적으로 개발/수정 가능
+- **LLM 자체 판단**: 하드코딩 없이 LLM이 상황에 맞게 판단
+- **메모리 기능**: 대화 컨텍스트 유지
+
+## 🆕 Interactive 대화 흐름
+
+### 모호한 요청 처리
+```
+사용자: "ice coffee"
+
+[Super Agent] 🔍 요청 명확성 분석 중...
+[Super Agent] 📝 추가 정보가 필요합니다.
+
+🤖 아이스 커피에 대해 어떤 정보를 원하시나요? 
+   - 집에서 만드는 레시피를 알고 싶으신가요?
+   - 추천 브랜드나 제품을 찾고 계신가요?
+   - 아이스 커피의 일반적인 정보가 궁금하신가요?
+
+💡 더 구체적으로 알려주시면 정확한 정보를 찾아드릴 수 있습니다.
+💬 추가 입력: 레시피 알려줘
+
+[System] 결합된 요청으로 다시 처리: 'ice coffee - 레시피 알려줘'
+
+📋 SUPER AGENT 실행 계획
+====================================
+**📋 실행 계획:**
+1. search_agent - 아이스 커피 레시피 검색
+2. conversation_agent - 검색 결과를 바탕으로 사용자 친화적 레시피 제공
+
+**🎯 예상 결과:**
+집에서 쉽게 만들 수 있는 아이스 커피 레시피 제공
+====================================
+
+→ 계획에 따라 각 에이전트가 순차 실행
+```
+
+### 명확한 요청 처리
+```
+사용자: "뉴욕 날씨 어때?"
+
+[Super Agent] ✅ 요청이 명확합니다. 실행 계획 수립 중...
+
+📋 SUPER AGENT 실행 계획
+====================================
+**📋 실행 계획:**
+1. weather_agent - 뉴욕 지역 날씨 정보 조회
+
+**🎯 예상 결과:**
+뉴욕의 현재 날씨 및 예보 정보 제공
+====================================
+
+→ 바로 실행
+```
+
+## 설치 및 실행
 
 ### 1. 의존성 설치
 ```bash
-# 가상환경 생성 및 활성화
-python3 -m venv venv
-source venv/bin/activate
-
-# 의존성 설치
 pip install -r requirements.txt
 ```
 
-자세한 모델 설정은 [MODEL_SETUP.md](MODEL_SETUP.md)를 참조하세요.
-
-### 2. 실행 방법
-
-#### 실행 스크립트 사용
+### 2. 환경 설정
 ```bash
-./run.sh "서울?"
+cp .env.example .env
+# .env 파일에서 필요한 환경변수 설정
 ```
 
-#### 대화형 모드
+### 3. 실행
 ```bash
+# 대화형 모드
+./run.sh
+
+# 또는
 python main.py
+
+# 단일 쿼리 모드
+./run.sh "파리에 대해 알려줘"
+python main.py "뉴욕 날씨 어때?"
+
+# Interactive 기능 테스트
+python test_interactive.py
 ```
 
-#### 단일 쿼리 실행
-```bash
-python main.py "서울"
+## 사용 예제
+
+### 🆕 모호한 요청의 Interactive 처리
+```
+입력: "커피"
+
+🤖 커피에 대해 어떤 정보를 원하시나요?
+   - 커피의 역사나 종류에 대한 일반적인 정보
+   - 커피 브랜드 추천
+   - 커피 만드는 방법이나 레시피
+   - 특정 지역의 커피 문화
+
+추가 입력: "역사 알려줘"
+
+→ "커피 - 역사 알려줘"로 재처리하여 Wikipedia 검색 실행
 ```
 
+### 복합 요청 처리
+```
+입력: "파리에 대해 알려주고 날씨도 알려줘"
 
-### 3. 테스트 실행
-```bash
-python test_agents.py
+📋 SUPER AGENT 실행 계획
+====================================
+**📋 실행 계획:**
+1. search_agent - 파리에 대한 기본 정보 검색
+2. weather_agent - 파리 날씨 정보 조회 시도
+3. conversation_agent - 결과 종합 및 사용자 친화적 응답
+
+**🎯 예상 결과:**
+파리의 기본 정보와 날씨 정보를 종합한 답변
+
+**⚠️ 주의사항:**
+날씨 API는 미국 지역만 지원하므로 파리 날씨는 제한적
+====================================
+
+→ 계획에 따라 각 에이전트가 순차 실행
 ```
 
-## [*] 응답 형식
+## 파일 구조
 
-모든 응답은 LLM 응답과 WEB UI 처리를 위한 다음과 같은 JSON 형식으로 반환됩니다:
-
-```json
-{
-  "success": true,
-  "agent": "super_agent",
-  "model_info": {
-    "provider": "BedrockModel",
-    "model_id": "us.amazon.nova-pro-v1:0"
-  },
-  "user_input": "Seoul",
-  "timestamp": "2025-06-12T16:41:25.013932",
-  "llm_synthesis": "종합된 AI 응답...",
-  "agents_called": ["search", "weather_forecaster"],
-  "agent_results": {
-    "search": {
-      "success": true,
-      "agent": "search",
-      "query": "Seoul",
-      "wikipedia_info": {...},
-      "position_info": {...}
-    },
-    "weather_forecaster": {
-      "success": true,
-      "agent": "weather_forecaster",
-      "data": {...}
-    }
-  },
-  "summary": {
-    "query": "Seoul",
-    "wikipedia_found": true,
-    "coordinates_found": true,
-    "weather_available": true,
-    "overall_success": true,
-    "intelligent_selection": true
-  }
-}
-```
-
-## [*] 구성 요소
-
-### 파일 구조
 ```
 strands/
-├── main.py              # 메인 애플리케이션
-├── super_agent.py       # 슈퍼 에이전트
-├── agents.py            # 개별 에이전트들
-├── agent_planner.py     # 지능적 에이전트 계획자
-├── mcp_tools.py         # Tools (MCP 도구들)
-├── model_config.py      # LLM 모델 설정
-├── config.py            # 일반 설정 파일
-├── test_agents.py       # 테스트 스크립트
-├── run.sh              # 실행 스크립트
-├── requirements.txt     # 의존성 목록
-├── .env.example        # 환경 변수 예제
-├── MODEL_SETUP.md      # 모델 설정 가이드
-└── README.md           # 이 파일
+├── main.py                 # 메인 애플리케이션 (Interactive 기능 포함)
+├── super_agent.py          # Super Agent (오케스트레이터, 명확성 판단)
+├── specialized_agents.py   # 전문 에이전트들 (@tool)
+├── memory_manager.py       # 메모리 관리 클래스
+├── model_config.py         # 모델 설정
+├── mcp_tools.py           # MCP 도구들
+├── config.py              # 기본 설정
+├── test_interactive.py    # Interactive 기능 테스트 (NEW!)
+├── requirements.txt       # 의존성
+├── .env.example          # 환경변수 예제
+├── run.sh                # 실행 스크립트
+└── README.md             # 이 파일
 ```
 
-## [+] 주요 기능
+## 개발 가이드
 
-1. **지능적 에이전트 선택**: LLM이 사용자 요청을 분석하여 필요한 에이전트만 실행
-2. **LLM 기반 문맥 이해**: 패턴 매칭이 아닌 LLM을 통한 자연어 이해
-3. **다양한 LLM 지원**: Amazon Bedrock 모델들 지원
-4. **Strands Tools 통합**: @tool 데코레이터를 사용한 도구 구현
-5. **LLM 종합 응답**: 모든 에이전트 결과를 LLM이 종합하여 자연어 응답 생성
-6. **표준화된 JSON 응답**: 모든 응답이 일관된 형식으로 제공
-7. **모델 정보 추적**: 각 응답에 사용된 모델 정보 포함
-8. **한글 지원**: 한국어 프롬프트 및 응답 지원
-9. **이모지 없는 출력**: 모든 PC 환경에서 호환 가능
+### 새로운 전문 에이전트 추가
 
-## [*] 작동 흐름
+1. `specialized_agents.py`에 새 에이전트 함수 추가:
+```python
+@tool
+def new_agent(query: str) -> str:
+    """새로운 전문 에이전트"""
+    agent = Agent(
+        system_prompt="전문 영역 프롬프트",
+        tools=[필요한_도구들]
+    )
+    response = agent(query)
+    return str(response)
+```
 
-1. 사용자가 쿼리 입력 (예: "서울 날씨")
-2. Agent Planner가 LLM을 통해 필요한 에이전트 결정
-3. 선택된 에이전트들만 순차 실행:
-   - Search Agent: Wikipedia 및 Position 도구 사용
-   - Weather Agent: 좌표 기반 날씨 정보 생성
-4. Super Agent가 모든 결과를 LLM으로 종합
-5. 사용자 친화적인 자연어 응답 생성
+2. `super_agent.py`에서 새 에이전트 import 및 추가:
+```python
+from specialized_agents import ..., new_agent
 
-## [*] 테스트 결과
+# tools 리스트에 추가
+tools=[..., new_agent]
+```
 
-### 날씨 검색 ("서울 날씨는?")
-- [+] LLM Planning: search + weather 에이전트 선택
-- [+] Search Agent: 서울 좌표 정보 획득 성공
-- [+] Weather Agent: LLM 기반 날씨 정보 생성 성공
-- [+] Super Agent: 종합적인 한국어 응답 생성
-- [+] 모델 정보 추적 (BedrockModel, us.amazon.nova-pro-v1:0)
+### 모델 변경
 
-### 일반 검색 ("서울")
-- [+] LLM Planning: search 에이전트만 선택
-- [+] Search Agent: 서울 정보 수집 성공
-- [+] Weather Agent: 실행 안됨 (불필요)
-- [+] Extra Agent: 실행 안됨 (불필요)
+`model_config.py`에서 사용할 모델 설정:
+```python
+MODEL_PROVIDER = "anthropic"  # 또는 "bedrock"
+MODEL_ID = "claude-3-5-sonnet-20241022"
+```
 
-### 인사말 ("hello")
-- [+] LLM Planning: extra 에이전트만 선택
-- [+] Extra Agent: 친근한 응답 생성
-- [+] 다른 에이전트들: 실행 안됨 (불필요)
+## 워크샵 특징
 
-## [*] 기술 스택
+- **간단하고 이해하기 쉬운 구조**
+- **실습용으로 최적화**
+- **단계별 학습 가능**
+- **확장 가능한 아키텍처**
+- **🆕 Interactive 대화 경험**
 
-- **Strands Agents 0.1.7**: 메인 에이전트 프레임워크
-- **Strands Agents Tools**: 추가 도구 패키지
-- **Amazon Bedrock**: (Nova Pro, Claude 등)
-- **Wikipedia API**: 지역 정보 검색
-- **OpenStreetMap Nominatim**: 위경도 가져오기 지오코딩 서비스
-- **httpx**: 비동기 HTTP 클라이언트
-- **Pydantic**: 데이터 검증
-- **python-dotenv**: 환경 변수 관리
+## 지원 기능
 
-## [*] 커스터마이징
+- ✅ Wikipedia 검색
+- ✅ 날씨 정보 (미국 지역)
+- ✅ 일반 대화
+- ✅ 메모리 관리
+- ✅ 대화형/단일 쿼리 모드
+- ✅ 다중 모델 지원 (Claude, Bedrock)
+- ✅ **Interactive 대화 흐름** (NEW!)
+- ✅ **요청 명확성 자동 판단** (NEW!)
 
-- `.env` 파일에서 MODEL_ID 설정으로 Bedrock 모델 변경
-- `model_config.py`에서 모델 구성 수정
-- `mcp_tools.py`에서 새로운 도구 추가 (@tool 데코레이터 사용)
-- `agents.py`에서 새로운 에이전트 구현
-- `agent_planner.py`에서 에이전트 선택 로직 수정
-- `super_agent.py`에서 에이전트 조정 로직 수정
+## 제한사항
 
-## [*] 참고사항
+- 날씨 API는 미국 지역만 지원
+- Wikipedia 검색은 영어 위주
+- 메모리는 세션 기반 (영구 저장 아님)
 
-- **기본 모델**: Amazon Bedrock Nova Pro (AWS 자격 증명 필요)
-- **Wikipedia API**: 무료 사용 가능
-- **날씨 정보**: LLM 생성 모의 데이터 사용
-- **지오코딩**: OpenStreetMap Nominatim API 사용 (무료)
-- **Bedrock 액세스**: AWS 콘솔에서 모델 액세스 권한 활성화 필요
+## 🆕 Interactive 기능 상세
 
-## [>] 실행 예제
+### LLM 기반 명확성 판단
+- **하드코딩 없음**: 키워드 리스트나 규칙 기반이 아닌 LLM이 직접 판단
+- **매우 모호한 요청만 질문**: LLM이 "매우 모호함"으로 판단한 경우에만 추가 정보 요청
+- **대부분의 요청은 바로 처리**: LLM이 "처리 가능"으로 판단하면 바로 실행
 
+### 대화 흐름
+1. **LLM 직접 판단**: Super Agent가 사용자 요청의 명확성을 LLM에게 질의
+2. **매우 모호한 경우**: 추가 정보 요청 → 사용자 응답 대기 → 결합하여 재처리
+3. **처리 가능한 경우**: 바로 실행 계획 수립 및 실행
+
+### 판단 예시
+```
+"커피" → LLM 판단 → NEED_MORE → 질문
+"ice coffee" → LLM 판단 → PROCEED → 바로 실행
+"파리" → LLM 판단 → PROCEED → 바로 실행
+"뉴욕 날씨" → LLM 판단 → PROCEED → 바로 실행
+```
+
+### 테스트 방법
 ```bash
-# 프로젝트 디렉토리로 이동
-cd /Users/jikjeong/Develop/python/strands
+# Interactive 기능 테스트
+python test_interactive.py
 
-# 가상환경 활성화
-source venv/bin/activate
-
-# 기본 Nova Pro 모델로 서울 정보 검색
-python main.py "서울"
-
-# Claude 3.5 Sonnet 모델로 실행
-MODEL_ID=anthropic.claude-3-5-sonnet-20241022-v2:0 python main.py "부산 날씨"
-
-# 대화형 모드 실행
+# 실제 대화형 모드에서 테스트
 python main.py
+# 다양한 입력으로 LLM의 판단 능력 테스트
 ```
-
-## [*] 실행 시 출력 예제
-
-```
-[*] 사용 중인 모델: BedrockModel, 모델 ID: us.amazon.nova-pro-v1:0
-[*] 제공자: bedrock
-==================================================
-
-[*] 입력 처리 중: '서울 날씨'
-==================================================
-[*] 에이전트 조정 시작...
-[*] 실행 계획 생성 중...
-[*] 선택된 에이전트: search, weather
-[>] SEARCH 에이전트 실행 중...
-[+] SEARCH 에이전트 완료
-[>] WEATHER 에이전트 실행 중...
-[+] WEATHER 에이전트 완료
-[*] 완료: search, weather
-
-[*] AI 어시스턴트 응답:
-==================================================
-서울 날씨에 대한 종합적인 정보를 제공해드리겠습니다...
-```
-
-이제 완전히 작동하는 **지능적 다중 에이전트 시스템**이 준비되었습니다!
