@@ -114,13 +114,7 @@ cp .env.example .env
 > - 가상환경 생성 (venv)
 > - 의존성 설치 (requirements.txt)
 > - 애플리케이션 실행
-
-### 3. 워크샵 테스트
-```bash
-# 워크샵용 통합 테스트 실행
-./run.sh && python workshop_test.py
-```
-
+ 
 ## 사용 예제
 
 ### 🆕 모호한 요청의 Interactive 처리
@@ -243,14 +237,7 @@ tools=[..., new_agent]
 MODEL_PROVIDER = "anthropic"  # 또는 "bedrock"
 MODEL_ID = "claude-3-5-sonnet-20241022"
 ```
-
-## 워크샵 특징
-
-- **간단하고 이해하기 쉬운 구조**
-- **실습용으로 최적화**
-- **단계별 학습 가능**
-- **확장 가능한 아키텍처**
-- **🆕 Interactive 대화 경험**
+ 
 
 ## 지원 기능
 
@@ -259,16 +246,10 @@ MODEL_ID = "claude-3-5-sonnet-20241022"
   - DuckDuckGo 검색 (실시간 웹 정보)
   - LLM 기반 최적 도구 선택
   - 결과 부족 시 자동 보완 검색
-- ✅ 날씨 정보 (미국 지역)
-- ✅ 일반 대화
-- ✅ 대화형/단일 쿼리 모드
-- ✅ 다중 모델 지원 (Claude, Bedrock)
-- ✅ **Interactive 대화 흐름**
-- ✅ **요청 명확성 자동 판단**
-- ✅ **UTF-8 안전 처리**
+  - 날씨 정보 (미국 지역) 
 
 ## 제한사항
-
+- 모든 검색 키워드는 영문으로 작성. (API들이 미국서비스)
 - 날씨 API는 미국 지역만 지원
 - Wikipedia 검색은 영어 위주
 
@@ -291,13 +272,4 @@ MODEL_ID = "claude-3-5-sonnet-20241022"
 "파리" → LLM 판단 → PROCEED → 바로 실행
 "뉴욕 날씨" → LLM 판단 → PROCEED → 바로 실행
 ```
-
-### 워크샵 테스트 방법
-```bash
-# 워크샵용 통합 테스트 실행
-./run.sh && python workshop_test.py
-
-# 실제 대화형 모드에서 테스트
-./run.sh
-# 다양한 입력으로 LLM의 판단 능력 테스트
-```
+ 
