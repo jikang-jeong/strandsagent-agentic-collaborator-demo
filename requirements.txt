@@ -1,6 +1,9 @@
 strands-agents
 strands-agents-tools
 httpx
+mem0ai
+faiss-cpu
+opensearch-py
 wikipedia
 pydantic
 python-dotenv
