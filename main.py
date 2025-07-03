@@ -2,9 +2,8 @@
 import os
 import sys
 from typing import Dict, Any
-from super_agent import SuperAgent
-from model_config import get_configured_model, MODEL_PROVIDER
-from specialized_agents import memory_agent
+from orchestrator_agent import OrchestratorAgent
+from model_config import get_configured_model
 
 class MultiAgentApplication:
     """Agents as Tools- multi Agent"""
@@ -12,7 +11,7 @@ class MultiAgentApplication:
     def __init__(self, model_id: str = None, user_id: str = "workshop_user"):
         self.model = get_configured_model(model_id)
         self.user_id = user_id
-        self.super_agent = SuperAgent(self.model, user_id)
+        self.orchestrator_agent = OrchestratorAgent(self.model, user_id)
         # 시스템 정보 출력
         model_name = type(self.model).__name__
         current_model_id = getattr(self.model, 'model_id', 'unknown')
@@ -22,17 +21,24 @@ class MultiAgentApplication:
         print("=" * 60)
         print(f"사용자 ID: {user_id}")
         print()
-        print("사용 가능한 agent:")
-        print("• Search Agent - Wikipedia 검색")
-        print("• Weather Agent - 날씨 정보 (미국 지역)")
+        print("사용 가능한 agent: ** 미국 서비스를 이용하므로 사용 키워드는 영문을 권장합니다. **")
+        print("• Search Agent - 지능적 검색 (Wikipedia + DuckDuckGo)")
+        print("• Weather Agent - 날씨 정보 (미국 지역 한정)")
         print("• Conversation Agent - 일반 대화")
-        print("• Memory Agent - 대화 기록 관리")
-        print("• Super Agent - 오케스트레이터")
+        print("• Orchestrator Agent - 오케스트레이터 (Sub Agents 관리)")
         print("=" * 60)
 
     def process_input(self, user_input: str) -> Dict[str, Any]:
-        """사용자 입력을 Super Agent를 통해 처리"""
-        return self.super_agent.process_user_input(user_input)
+        """사용자 입력을 Orchestrator Agent를 통해 처리"""
+        try:
+            result = self.orchestrator_agent.process_user_input(user_input)
+            return result
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"처리 중 오류가 발생했습니다: {str(e)}",
+                "user_input": user_input
+            }
 
     def run_single_query(self, query: str) -> Dict[str, Any]:
         """단일 쿼리 실행"""
@@ -63,11 +69,8 @@ class MultiAgentApplication:
         print("\n🚀 대화형 모드 시작!")
         print("다양한 요청을 입력해보세요:")
         print("- 정보 검색: '라스베가스에 대해 알려줘'")
-        print("- 날씨 조회: '뉴욕 날씨 어때?'")
+        print("- 날씨 조회: 'newyork 날씨 어때?'")
         print("- 일반 대화: '안녕하세요'")
-        print("- 메모리 조회: /list")
-        print("- 메모리 초기화: /clear")
-        print("메모리 정상 초기화 안된다면 실행! rm -rf /tmp/mem0_384_faiss/")
         print("- 종료: '/quit'")
         print()
 
@@ -80,14 +83,6 @@ class MultiAgentApplication:
 
                 if not user_input:
                     print("⚠️ 메시지를 입력해주세요.")
-                    continue
-                    
-                if user_input.lower() in ['/list']:
-                    memory_agent("retrieve", self.user_id)
-                    continue
-                    
-                if user_input.lower() in ['/clear']:
-                    memory_agent("clear", self.user_id)
                     continue
 
                 # 입력 처리

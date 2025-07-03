@@ -1,4 +1,4 @@
-"""워크샵용 모델 설정 - 간단하고 효율적"""
+"""워크샵용 모델 설정 """
 import os
 from strands.models import BedrockModel
 
