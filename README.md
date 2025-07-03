@@ -73,14 +73,14 @@ Strands Agents SDK를 사용한 "Agents as Tools" 패턴 구현 예제입니다.
 
 ### 명확한 요청 처리
 ```
-사용자: "뉴욕 날씨 어때?"
+사용자: "newyork 날씨 어때?"
 
 [Orchestrator Agent] ✅ 요청이 명확합니다. 실행 계획 수립 중...
 
 📋 ORCHESTRATOR AGENT 실행 계획
 ====================================
 **📋 실행 계획:**
-1. weather_agent - 뉴욕 지역 날씨 정보 조회
+1. weather_agent - newyork 지역 날씨 정보 조회
 
 **🎯 예상 결과:**
 뉴욕의 현재 날씨 및 예보 정보 제공
